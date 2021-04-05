@@ -20,6 +20,9 @@ const DisplayLimit = (props) => {
   );
 };
 
-DisplayLimit.propTypes = {};
+DisplayLimit.propTypes = {
+  setLimit: PropTypes.func.isRequired,
+  limit: PropTypes.number.isRequired,
+};
 
 export default DisplayLimit;

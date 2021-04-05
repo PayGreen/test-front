@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
-import photos from "./domains/PhotoByAlbum";
+
 import styled from "styled-components";
-import { useEffect, useState } from "react";
-import { HeaderPhotosLength } from "./domains/HeaderPhotosLength";
-import { Home } from "./domains/Home";
-import DisplayLimit from "./domains/DisplayLimit";
-import { DisplayAPhoto } from "./domains/DisplayAPhoto";
-import PhotosByAlbum from "./domains/PhotoByAlbum";
+
+import PhotosByAlbum from "./domains/components/PhotoByAlbum";
+import  {Home}  from "./domains/Home";
+import {Users} from "./domains/components/Users";
+import  {DisplayAPhoto} from "./domains/components/DisplayAPhoto";
+import {usePhotos}  from "./domains/Services/photosApi";
+
 
 const Main = styled.div`
   display: flex;
@@ -30,53 +32,55 @@ const Header = styled.header`
   }
 `;
 
-const Flex = styled.div`
-  display: flex;
-  align-items: center;
-  & > * {
-    margin: 10px;
-  }
-`;
 
 const Content = styled.div`
   padding: 20px;
 `;
 
 function App() {
-  const [photos, setPhotos] = useState([]);
+
   const [limit, setLimit] = useState(25);
-  useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/photos")
-      .then((data) => data.json())
-      .then((data) => {
-        setPhotos(data);
-      });
-  }, []);
+  const { loading, data: photos, error } = usePhotos();
 
   return (
     <div className="App">
       <Main>
         <Router>
           <Header>
-            <Flex>
-              <Link to="/">Home</Link>
-              <Link to="/photos-by-album">Photos by Album</Link>
-            </Flex>
-            <Flex>
-              <DisplayAPhoto />
-              <HeaderPhotosLength datas={photos} />
-              <DisplayLimit setLimit={setLimit} limit={limit} />
-            </Flex>
+              <DisplayAPhoto photoUrl={photos[0]?.url} />
+              <nav style={{ display: "flex" }}>
+                <li>
+                  <Link to="/">Home</Link>
+                </li>
+                <li>
+                  <Link to="/photos-by-album">Photos by Album</Link>
+                </li>
+                <li>
+                  <Link to="/users">Users</Link>
+                </li>
+              </nav>
           </Header>
 
           <Content>
             <Switch>
               <Route path="/photos-by-album">
-                <PhotosByAlbum limit={limit} />
+                <PhotosByAlbum
+                  limit={parseInt(limit)}
+                  setLimit={setLimit}
+                  photos={photos}
+                />
               </Route>
-
+              <Route path="/users">
+                <Users />
+              </Route>
               <Route path="/">
-                <Home setLimit={setLimit} limit={limit} />
+                {loading ? (
+                  <div>Loading</div>
+                ) : error ? (
+                  <div>Error</div>
+                ) : (
+                  <Home setLimit={setLimit} limit={parseInt(limit)} photos={photos} />
+                )}
               </Route>
             </Switch>
           </Content>
